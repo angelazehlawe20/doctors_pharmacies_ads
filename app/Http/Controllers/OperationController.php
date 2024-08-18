@@ -4,27 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Message;
+use App\Models\Pharmacy;
 use Illuminate\Http\Request;
 
 class OperationController extends Controller
 {
-    public function send_message(Request $request,$id)
-    {
-        $data['sender_id']=auth()->user()->id;
-        $data['reciver_id']=$id;
-        $data['content']=$request->content;
+    public function send_message(Request $request)
+{
+    $request->validate([
+        'pharma_id' => 'required|exists:pharmacies,id',
+        'content' => 'required|string|max:1000'
+    ]);
 
-        $dataStored=Message::create($data);
-        return response()->json($dataStored);
+    $pharma_id = $request->input('pharma_id');
+    $pharmacyExists = Pharmacy::where('id', $pharma_id)->exists();
+    if ($pharmacyExists) {
+        $data = [
+            'sender_id' => auth()->user()->id,
+            'receiver_id' => $pharma_id,
+            'content' => $request->input('content'),
+        ];
+        $dataStored = Message::create($data);
+        return response()->json($dataStored, 201);
     }
-
-
-    public function get_my_messages()
-    {
-        $userId = auth()->user()->id;
-        $received_messages = Message::where('receiver_id', $userId)->get();
-        return response()->json($received_messages);
-    }
+    return response()->json(['error' => 'Pharmacy not found.'], 404);
+}
 
 
     public function get_all_my_messages()

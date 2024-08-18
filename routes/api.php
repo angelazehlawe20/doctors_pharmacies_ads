@@ -41,14 +41,18 @@ Route::get('homePage',[HomeController::class,'homePage']);
 Route::get('getDoctors',[HomeController::class,'get_all_Doctors']);
 Route::get('getPharmacies',[HomeController::class,'get_all_Pharmacies']);
 Route::post('PharmacyId', [HomeController::class, 'pharmacy_details']);
-Route::post('save-Appointment/{doctor_id}', [HomeController::class, 'store_appointment']);
+Route::group(['middleware'=>['auth:sanctum']],function(){
+    Route::post('save-Appointment', [HomeController::class, 'store_appointment']);
+    Route::post('send-message', [OperationController::class, 'send_message']);
+    Route::get('get-all-messages', [OperationController::class, 'get_all_my_messages']);
+    Route::get('get-doctor-appointments', [OperationController::class, 'get_doctor_appointments']);
+    Route::post('reject-accept-appointment/{id}', [OperationController::class, 'reject_accept_appointment']);
+
+});
 
 
-Route::post('send-message/{id}', [OperationController::class, 'send_message']);
-Route::get('receive-messages', [OperationController::class, 'get_my_messages']);
-Route::get('get-all-messages', [OperationController::class, 'get_all_my_messages']);
-Route::get('get-doctor-appointments', [OperationController::class, 'get_doctor_appointments']);
-Route::post('reject-accept-appointment/{id}', [OperationController::class, 'reject_accept_appointment']);
+
+
 
 
 

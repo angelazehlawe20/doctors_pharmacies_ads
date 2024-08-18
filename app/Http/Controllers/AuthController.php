@@ -40,31 +40,61 @@ class AuthController extends Controller
 
     public function add_new_doctor(Request $request)
     {
-        $user['name'] = $request->name;
-        $user['username'] = $request->username;
-        $user['email'] = $request->email;
-        $user['password'] = $request->password;
-        $user['phone'] = $request->phone;
-        $user['role'] = 'doctor';
+        $validation=$request->validate([
+            'name'=>'required|string',
+            'username'=>'required|string',
+            'email'=>'required|email|string|unique:users',
+            'password'=>'required|string',
+            'phone'=>'required|string',
+            'image'=>'nullable|file|image',
+        ]);
+        $imagePath = null;
+        if($request->hasFile('image')){
+            $imagePath = $request->file('image')->store($request->name . '_image', 'public');
+        }
+        if($validation){
+            $user=[
+                'name'=>$validation['name'],
+                'username'=>$validation['username'],
+                'email'=>$validation['email'],
+                'password'=>bcrypt($validation['password']),
+                'phone'=>$validation['phone'],
+                'role'=>'doctor'
+            ];
         $userStored=User::create($user);
         $newDoctor= $userStored->doctor()->create([
             'spec'=>$request->spec,
             'address'=>$request->address,
             'clinic_phone'=>$request->clinic_phone,
-            'image'=>$request->image->store($request->name. '_image', 'public'),
+            'image'=>$imagePath
         ]);
         return response()->json($newDoctor);
+    }
+    return response()->json('Failed to add new doctor');
     }
 
 
     public function add_new_pharmacy(Request $request)
     {
-        $user['name'] = $request->name;
-        $user['username'] = $request->username;
-        $user['email'] = $request->email;
-        $user['password'] = $request->password;
-        $user['phone'] = $request->phone;
-        $user['role'] = 'pharmacy';
+        $validation=$request->validate([
+            'name' => 'required|string',
+            'username' => 'required|string',
+            'email' => 'required|string|email|unique:users',
+            'password' => 'required|string',
+            'phone' => 'required|string',
+            'role' => 'pharmacy',
+
+        ]);
+        if($validation){
+            $user=[
+                'name'=>$validation['name'],
+                'username'=>$validation['username'],
+                'email'=>$validation['email'],
+                'password'=>bcrypt($validation['password']),
+                'phone'=>$validation['phone'],
+                'role'=>'pharmacy'
+
+            ];
         $userStored=User::create($user);
         $newPharmacy= $userStored->pharmacy()->create([
             'description'=>$request->description,
@@ -72,6 +102,8 @@ class AuthController extends Controller
             'pharmacy_phone'=>$request->pharmacy_phone,
         ]);
         return response()->json($newPharmacy);
+    }
+    return response()->json('Failed to add new pharmacy');
     }
 
 

@@ -46,11 +46,12 @@ class HomeController extends Controller
         }
     }
 
-    public function store_appointment($id)
+    public function store_appointment(Request $request)
     {
+        $doctor_id=$request->input('doctor_id');
         $data = Appointment::create([
             'user_id' => auth()->user()->id,
-            'doctor_id' => $id,
+            'doctor_id' => $doctor_id,
         ]);
         return response()->json(['message' => 'Your appointment is stored'], 201);
     }
